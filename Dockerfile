@@ -217,6 +217,15 @@ ENV PATH="/home/renovate/.local/bin:/home/renovate/node_modules/.bin:/home/renov
 # Install package managers
 RUN npm install pnpm@${PNPM_VERSION} yarn@${YARN_VERSION} bun@${BUN_VERSION} && npm cache clean --force
 
+# Enable Corepack so repos that pin a "packageManager" field (Yarn Berry, pnpm via
+# Corepack) get that exact version instead of failing artifact updates with:
+#   "However the current global version of Yarn is 1.22.22 ... Corepack must
+#   currently be enabled by running corepack enable in your terminal."
+# --install-directory targets a directory already owned by the renovate user and
+# already first on PATH, since corepack's default target (next to the node/corepack
+# binaries) isn't writable by this non-root user.
+RUN corepack enable --install-directory /home/renovate/.local/bin
+
 # Install bundler
 RUN gem install bundler -v ${BUNDLER_VERSION}
 
